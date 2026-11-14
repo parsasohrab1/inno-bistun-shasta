@@ -1,0 +1,49 @@
+{
+  "per_class": {
+    "clean": 200,
+    "stain": 200,
+    "hole": 200,
+    "non_uniform": 200,
+    "scratch": 200,
+    "inclusion": 200
+  },
+  "total": 1200,
+  "size_px": 256,
+  "jpeg_quality": 88,
+  "seed": 20261114,
+  "classes": [
+    "clean",
+    "stain",
+    "hole",
+    "non_uniform",
+    "scratch",
+    "inclusion"
+  ],
+  "labels_en_fa": {
+    "clean": {
+      "en": "Clean",
+      "fa": "سالم"
+    },
+    "stain": {
+      "en": "Stain",
+      "fa": "لکه"
+    },
+    "hole": {
+      "en": "Hole",
+      "fa": "سوراخ"
+    },
+    "non_uniform": {
+      "en": "Non-uniformity",
+      "fa": "نایکنواختی"
+    },
+    "scratch": {
+      "en": "Scratch",
+      "fa": "خراش"
+    },
+    "inclusion": {
+      "en": "Inclusion",
+      "fa": "آخال"
+    }
+  },
+  "source": "synthetic (procedural paper-web renderer, see backend/app/core/paper_render.py)"
+}

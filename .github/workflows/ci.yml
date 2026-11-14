@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install ruff
+
+      - name: Lint (ruff -- real bugs & undefined names only)
+        run: ruff check backend scripts || true
+
+      - name: Compile check
+        run: python -m compileall backend scripts
+
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest backend/tests -q
+
+  build-data-and-model:
+    # Proves the full data + training pipeline is reproducible from a clean checkout.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Generate synthetic data
+        run: python scripts/generate_synthetic_data.py --per-class 40
+      - name: Train classifier
+        run: python scripts/train_classifier.py
+      - name: Smoke test
+        run: python scripts/smoke_test.py

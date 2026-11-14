@@ -1,0 +1,20 @@
+# Bistun Paper Industries -- Integrated Quality & Energy Control
+# One service: the FastAPI backend, which also serves the live dashboard at /.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: bistun-inno-shasta:latest
+    container_name: bistun-inno-shasta
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/api/health', timeout=4); sys.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

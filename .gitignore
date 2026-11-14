@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Secrets / local
+.env
+.env.*
+.gh_token
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Node (dashboard is hand-written, no build, but just in case)
+node_modules/
+
+# Local download scratch (the deliverable repo is the GitHub repo itself)
+download/
+
+# NOTE: data/ (real + synthetic) and models/ are COMMITTED deliverables.

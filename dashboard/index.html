@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bistun Paper Industries — Integrated Quality &amp; Energy Control</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#171d24; --panel2:#1e2630; --line:#2a333d;
+    --txt:#e6edf3; --mut:#8b97a6; --acc:#4ea1ff; --green:#36c46a; --amber:#f0a93b;
+    --red:#ef5b5b; --purple:#a972ff; --cyan:#36d6c4;
+    --stain:#dc3232; --hole:#ff7a30; --nu:#b58a2a; --scratch:#c8d637; --inclusion:#c850e0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--txt);
+       font-size:14px;line-height:1.45}
+  header{display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--line);
+         background:linear-gradient(180deg,#10161d,#0c1116)}
+  header .logo{font-weight:700;font-size:16px;letter-spacing:.2px}
+  header .sub{color:var(--mut);font-size:12px}
+  header .conn{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 8px currentColor}
+  .dot.ok{background:var(--green)} .dot.paused{background:var(--amber)}
+  .btns button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;
+               padding:5px 12px;cursor:pointer;font-size:12px;margin-left:6px}
+  .btns button:hover{border-color:var(--acc)}
+  .grid{display:grid;gap:12px;padding:12px}
+  .row1{grid-template-columns:420px 1fr 320px}
+  .row2{grid-template-columns:1fr 1fr 1fr}
+  .row3{grid-template-columns:1fr 360px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .panel h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);font-weight:600}
+  .video-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#000;border-radius:8px;overflow:hidden}
+  .video-wrap canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .badge{position:absolute;left:10px;top:10px;padding:5px 10px;border-radius:6px;font-weight:700;font-size:13px;
+         background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15)}
+  .qbar{position:absolute;left:10px;right:10px;bottom:10px;height:8px;border-radius:4px;
+        background:rgba(255,255,255,.15);overflow:hidden}
+  .qbar>div{height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));transition:width .3s}
+  .stats-line{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--mut)}
+  .stats-line b{color:var(--txt)}
+  table.kv{width:100%;border-collapse:collapse;font-size:13px}
+  table.kv td{padding:4px 0;border-bottom:1px solid var(--line)}
+  table.kv td:first-child{color:var(--mut)}
+  table.kv td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .delta{font-size:11px;color:var(--mut)} .delta .up{color:var(--amber)} .delta .down{color:var(--green)}
+  .big{display:grid;grid-template-columns:1fr;gap:10px}
+  .big .card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .big .num{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+  .big .lbl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .big .card.co2 .num{color:var(--green)} .big .card.energy .num{color:var(--acc)} .big .card.tonnes .num{color:var(--cyan)}
+  .chart{width:100%;height:130px;background:var(--panel2);border-radius:8px;border:1px solid var(--line)}
+  .feed{max-height:180px;overflow:auto;font-size:12px}
+  .feed table{width:100%;border-collapse:collapse}
+  .feed th,.feed td{padding:3px 6px;text-align:left;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .feed th{color:var(--mut);font-weight:600;position:sticky;top:0;background:var(--panel)}
+  .pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-size:11px;color:var(--mut)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .rationale{font-size:12px;color:var(--mut);max-height:80px;overflow:auto;margin-top:6px}
+  .rationale div{padding:2px 0;border-bottom:1px dashed var(--line)}
+  .inspec{padding:4px 8px;border-radius:6px;font-weight:700;font-size:12px;display:inline-block}
+  .inspec.yes{background:rgba(54,196,106,.15);color:var(--green);border:1px solid var(--green)}
+  .inspec.no{background:rgba(239,91,91,.15);color:var(--red);border:1px solid var(--red)}
+  .gauge-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .gauge{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .gauge .lbl{font-size:11px;color:var(--mut)} .gauge .val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fa{color:var(--mut);font-size:11px}
+  @media(max-width:1100px){.row1{grid-template-columns:1fr}.row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">Bistun Paper Industries · صنایع کاغذ بیستون</div>
+    <div class="sub">Integrated Quality &amp; Energy Control — Machine Vision + APC (TRL 5)</div>
+  </div>
+  <div class="btns">
+    <button onclick="send({action:'pause'})">Pause</button>
+    <button onclick="send({action:'resume'})">Resume</button>
+    <button onclick="send({action:'reset'})">Reset</button>
+    <button onclick="send({action:'seed',seed:Math.floor(Math.random()*1e9)})">New Run</button>
+  </div>
+  <div class="conn"><span class="dot" id="dot"></span><span id="connstate">connecting…</span></div>
+</header>
+
+<div class="grid row1">
+  <div class="panel">
+    <h3>Live Web Camera (defect overlay)</h3>
+    <div class="video-wrap">
+      <canvas id="video" width="256" height="256"></canvas>
+      <div class="badge" id="cls">—</div>
+      <div class="qbar"><div id="qfill" style="width:0%"></div></div>
+    </div>
+    <div class="stats-line">
+      <span>Truth: <b id="truth">—</b></span>
+      <span>Pred: <b id="pred">—</b> <span class="fa" id="predfa"></span></span>
+      <span>Conf: <b id="conf">—</b></span>
+      <span>N defects: <b id="ndef">—</b></span>
+    </div>
+    <div class="stats-line">
+      <span>Quality: <b id="q">—</b></span>
+      <span>Defect area: <b id="dar">—</b></span>
+      <span>t: <b id="t">—</b> s</span>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--stain)"></i>Stain لکه</span>
+      <span><i style="background:var(--hole)"></i>Hole سوراخ</span>
+      <span><i style="background:var(--nu)"></i>Non-uniform نایکنواختی</span>
+      <span><i style="background:var(--scratch)"></i>Scratch خراش</span>
+      <span><i style="background:var(--inclusion)"></i>Inclusion آخال</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Advanced Process Control — MPC setpoint optimiser</h3>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span class="inspec yes" id="inspec">IN SPEC</span>
+      <span style="font-size:12px;color:var(--mut)" id="inspec_msg"></span>
+    </div>
+    <table class="kv">
+      <tr><td>Line speed (m/min)</td><td><b id="sp_speed">—</b> <span class="delta" id="d_speed"></span></td></tr>
+      <tr><td>Steam pressure (bar)</td><td><b id="sp_steam">—</b> <span class="delta" id="d_steam"></span></td></tr>
+      <tr><td>Retention aid (kg/t)</td><td><b id="sp_chem">—</b> <span class="delta" id="d_chem"></span></td></tr>
+      <tr><td>Stock consistency (%)</td><td><b id="sp_consist">—</b></td></tr>
+      <tr><td>Predicted defect rate</td><td><b id="pdr">—</b></td></tr>
+      <tr><td>Energy (GJ/t)</td><td><b id="energy">—</b> <span class="delta" id="d_energy"></span></td></tr>
+      <tr><td>CO₂ (kg/t)</td><td><b id="co2">—</b> <span class="delta" id="d_co2"></span></td></tr>
+    </table>
+    <div class="gauge-row">
+      <div class="gauge"><div class="lbl">Defect-rate reduction</div><div class="val" id="drr">—</div></div>
+      <div class="gauge"><div class="lbl">Tonnes saved / h</div><div class="val" id="tph">—</div></div>
+    </div>
+    <div class="rationale" id="rationale"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Cumulative savings (this run)</h3>
+    <div class="big">
+      <div class="card co2"><div class="num" id="cum_co2">0.0</div><div class="lbl">CO₂ avoided (kg)</div></div>
+      <div class="card energy"><div class="num" id="cum_energy">0.00</div><div class="lbl">Energy avoided (GJ)</div></div>
+      <div class="card tonnes"><div class="num" id="cum_tonnes">0.00</div><div class="lbl">Defective tonnes avoided</div></div>
+      <div class="card"><div class="num" id="cum_frames">0</div><div class="lbl">Frames · <span id="cum_defrate">0%</span> defective</div></div>
+      <div class="card"><div class="num" id="cum_avgq">—</div><div class="lbl">Avg quality (0–1)</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid row2">
+  <div class="panel"><h3>Quality score (0–1)</h3><canvas class="chart" id="ch_q" width="600" height="130"></canvas></div>
+  <div class="panel"><h3>Defect rate (%)</h3><canvas class="chart" id="ch_dr" width="600" height="130"></canvas></div>
+  <div class="panel"><h3>CO₂ saved rate (kg/h)</h3><canvas class="chart" id="ch_co2" width="600" height="130"></canvas></div>
+</div>
+
+<div class="grid row3">
+  <div class="panel">
+    <h3>Defect event feed</h3>
+    <div class="feed">
+      <table><thead><tr><th>t</th><th>Class</th><th>Conf</th><th>N</th><th>Quality</th><th>Severity</th></tr></thead>
+      <tbody id="feed"></tbody></table>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Class distribution (this run)</h3>
+    <div id="dist"></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--mut)">Live engine: <b id="eng_state">—</b> · clients <b id="eng_clients">—</b></div>
+  </div>
+</div>
+
+<script>
+const COL={clean:'#36c46a',stain:'#dc3232',hole:'#ff7a30',non_uniform:'#b58a2a',scratch:'#c8d637',inclusion:'#c850e0'};
+const FA={clean:'سالم',stain:'لکه',hole:'سوراخ',non_uniform:'نایکنواختی',scratch:'خراش',inclusion:'آخال'};
+const hist={q:[],dr:[],co2:[],dist:{clean:0,stain:0,hole:0,non_uniform:0,scratch:0,inclusion:0}};
+const MAX=120;
+
+let ws=null, paused=false, connected=false;
+function conn(){
+  const url=(location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws/live';
+  ws=new WebSocket(url);
+  ws.onopen=()=>{connected=true;setConn('live','ok');};
+  ws.onclose=()=>{connected=false;setConn('reconnecting…','paused');setTimeout(conn,1500);};
+  ws.onerror=()=>{ws.close();};
+  ws.onmessage=(e)=>{const m=JSON.parse(e.data);render(m);};
+}
+function setConn(t,s){document.getElementById('connstate').textContent=t;
+  const d=document.getElementById('dot');d.className='dot '+(s==='ok'?'ok':(s==='paused'?'paused':''));}
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));}
+
+const img=new Image();
+function render(m){
+  if(m.type==='state'){document.getElementById('eng_state').textContent=m.paused?'paused':'running';
+    document.getElementById('eng_clients').textContent=m.n_clients;return;}
+  // video
+  if(m.overlay_jpeg_b64){img.onload=()=>{
+    const c=document.getElementById('video'),x=c.getContext('2d');
+    x.drawImage(img,0,0,c.width,c.height);};img.src='data:image/jpeg;base64,'+m.overlay_jpeg_b64;}
+  const det=m.detection||{}, cls=det.pred_class||'clean';
+  const b=document.getElementById('cls');b.textContent=(cls==='clean'?'CLEAN':cls.toUpperCase())+' '+((FA[cls]||''));
+  b.style.color=COL[cls]||'#fff';
+  document.getElementById('truth').textContent=m.label_truth||'—';
+  document.getElementById('pred').textContent=cls;
+  document.getElementById('predfa').textContent='('+FA[cls]+')';
+  document.getElementById('conf').textContent=det.confidence!=null?(det.confidence*100).toFixed(0)+'%':'—';
+  document.getElementById('ndef').textContent=det.n_defects;
+  document.getElementById('q').textContent=det.quality_score!=null?det.quality_score.toFixed(2):'—';
+  document.getElementById('dar').textContent=(det.defect_area_ratio*100).toFixed(2)+'%';
+  document.getElementById('t').textContent=m.t.toFixed(1);
+  const qf=document.getElementById('qfill');qf.style.width=((det.quality_score||0)*100)+'%';
+  // APC
+  const a=m.apc||{}, st=m.state||{};
+  document.getElementById('sp_speed').textContent=st.speed!=null?st.speed.toFixed(0):'—';
+  document.getElementById('sp_steam').textContent=st.steam_pressure!=null?st.steam_pressure.toFixed(2):'—';
+  document.getElementById('sp_chem').textContent=st.chem_dosage!=null?st.chem_dosage.toFixed(2):'—';
+  document.getElementById('sp_consist').textContent=st.consistency!=null?st.consistency.toFixed(2):'—';
+  document.getElementById('pdr').textContent=(a.predicted_defect_rate*100).toFixed(2)+'%';
+  document.getElementById('energy').textContent=a.predicted_energy_gj_per_t!=null?a.predicted_energy_gj_per_t.toFixed(2):'—';
+  document.getElementById('co2').textContent=a.predicted_co2_kg_per_t!=null?a.predicted_co2_kg_per_t.toFixed(0):'—';
+  delta('d_speed',a.deltas&&a.deltas.speed);delta('d_steam',a.deltas&&a.deltas.steam_pressure);delta('d_chem',a.deltas&&a.deltas.chem_dosage);
+  savedChip('d_energy',a.energy_saving_gj_per_t,'GJ/t');savedChip('d_co2',a.co2_saving_kg_per_t,'kg/t');
+  document.getElementById('drr').textContent=(a.defect_rate_reduction*100).toFixed(2)+'%';
+  document.getElementById('tph').textContent=a.tonnes_saved_per_h!=null?a.tonnes_saved_per_h.toFixed(2):'—';
+  const ins=document.getElementById('inspec');ins.className='inspec '+(a.in_spec?'yes':'no');
+  ins.textContent=a.in_spec?'IN SPEC':'OUT OF SPEC';
+  document.getElementById('inspec_msg').textContent=a.in_spec?'minimising energy at target quality':'retuning setpoints to meet spec';
+  const r=document.getElementById('rationale');r.innerHTML=(a.rationale||[]).map(x=>'<div>• '+x+'</div>').join('');
+  // cumulative
+  const c=m.cumulative||{};
+  document.getElementById('cum_co2').textContent=(c.co2_saved_kg||0).toFixed(1);
+  document.getElementById('cum_energy').textContent=(c.energy_saved_gj||0).toFixed(2);
+  document.getElementById('cum_tonnes').textContent=(c.tonnes_saved||0).toFixed(3);
+  document.getElementById('cum_frames').textContent=c.frames||0;
+  document.getElementById('cum_defrate').textContent=((c.defect_frame_rate||0)*100).toFixed(1)+'%';
+  document.getElementById('cum_avgq').textContent=c.avg_quality!=null?c.avg_quality.toFixed(2):'—';
+  // charts
+  push('q',det.quality_score||0);push('dr',(det.defect_area_ratio||0)*100);
+  push('co2',a.co2_saved_kg_per_h||0);
+  draw('ch_q',hist.q,0,1,'#36c46a');draw('ch_dr',hist.dr,0,Math.max(5,max(hist.dr)),'#ef5b5b');
+  draw('ch_co2',hist.co2,0,Math.max(1,max(hist.co2)),'#4ea1ff');
+  // feed + dist
+  if(cls!=='clean'){
+    const sev=(det.defects||[]).reduce((s,d)=>s+d.severity,0);
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+m.t.toFixed(1)+'</td><td><span class="pill" style="background:'+(COL[cls]||'#888')+'22;color:'+(COL[cls]||'#fff')+'">'+cls+'</span></td>'
+      +'<td>'+(det.confidence!=null?(det.confidence*100).toFixed(0)+'%':'—')+'</td><td>'+det.n_defects+'</td><td>'+(det.quality_score||0).toFixed(2)+'</td><td>'+sev.toFixed(2)+'</td>';
+    const fb=document.getElementById('feed');fb.insertBefore(tr,fb.firstChild);while(fb.rows.length>40)fb.deleteRow(fb.rows.length-1);
+  }
+  hist.dist[cls]=(hist.dist[cls]||0)+1;renderDist();
+}
+function delta(id,v,positiveGood){
+  const el=document.getElementById(id);
+  if(v==null||Math.abs(v)<1e-6){el.textContent='';return;}
+  const sign=v>0?'▲':'▼',cls=v>0?'up':'down';
+  el.innerHTML='<span class="'+cls+'">'+sign+' '+Math.abs(v).toFixed(2)+'</span>';
+}
+function savedChip(id,v,unit){
+  const el=document.getElementById(id);
+  if(v==null||Math.abs(v)<1e-6){el.textContent='';return;}
+  const good=v>0;
+  el.innerHTML='<span style="color:'+(good?'#36c46a':'#ef5b5b')+'">'+(good?'▼ ':'▲ ')+Math.abs(v).toFixed(2)+' '+unit+(good?' saved':' more')+'</span>';
+}
+function push(k,v){hist[k].push(v);if(hist[k].length>MAX)hist[k].shift();}
+function max(a){return a.length?Math.max.apply(null,a):0;}
+function draw(id,data,lo,hi,color){
+  const c=document.getElementById(id),x=c.getContext('2d');
+  const W=c.width,H=c.height;x.clearRect(0,0,W,H);
+  // grid
+  x.strokeStyle='#2a333d';x.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=i*H/4;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke();}
+  if(data.length<2)return;
+  const rng=hi-lo||1;
+  x.strokeStyle=color;x.lineWidth=2;x.beginPath();
+  data.forEach((v,i)=>{const px=i/(MAX-1)*W;const py=H-((v-lo)/rng)*H;
+    if(i===0)x.moveTo(px,py);else x.lineTo(px,py);});
+  x.stroke();
+  // fill
+  x.lineTo((data.length-1)/(MAX-1)*W,H);x.lineTo(0,H);x.closePath();
+  x.fillStyle=color+'22';x.fill();
+}
+function renderDist(){
+  const total=Object.values(hist.dist).reduce((a,b)=>a+b,0)||1;
+  const el=document.getElementById('dist');let h='';
+  for(const k of ['clean','stain','hole','non_uniform','scratch','inclusion']){
+    const n=hist.dist[k]||0,pct=(n/total*100);
+    h+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:'+COL[k]+'">'+k+' '+FA[k]+'</span><span>'+n+' ('+pct.toFixed(0)+'%)</span></div>'
+      +'<div style="height:6px;background:var(--panel2);border-radius:3px;margin-top:2px"><div style="height:100%;width:'+pct+'%;background:'+COL[k]+';border-radius:3px"></div></div></div>';
+  }
+  el.innerHTML=h;
+}
+conn();
+</script>
+</body>
+</html>
